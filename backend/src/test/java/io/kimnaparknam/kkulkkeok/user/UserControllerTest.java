@@ -3,6 +3,8 @@ package io.kimnaparknam.kkulkkeok.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.kimnaparknam.kkulkkeok.config.WebSecurityConfig;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -17,7 +19,11 @@ import org.springframework.web.context.WebApplicationContext;
 import java.security.Principal;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.http.ResponseEntity.status;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 @WebMvcTest(
         controllers = {UserController.class},
@@ -43,5 +49,14 @@ class UserControllerTest {
                 mockMvc = MockMvcBuilders.webAppContextSetup(context)
                         .apply(springSecurity(new MockSpringSecurityFIlter()))
                         .build();
+        }
+
+        @Test
+        @DisplayName("로그인")
+        void test1() throws Exception {
+                //when - then
+                mockMvc.perform(get("/api/v1/users/login"))
+                        .andExpect(status().isOk())
+                        .andDo(print());
         }
 }
