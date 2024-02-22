@@ -24,6 +24,7 @@ import java.security.Principal;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -80,10 +81,28 @@ class UserControllerTest {
 
         //when-then
         mockMvc.perform(post("/users/signup")
-                .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(signupRequestDto)))
                 .andExpect(status().isCreated())
                 .andDo(print());
     }
+    @Test
+    @DisplayName("회원 정보 수정")
+    void test2() throws Exception {
+        //given
+        this.mockUserSetup();
+        String testPassword = passwordEncoder.encode("passwrod");
+        UserRequestDto userRequestDto = new UserRequestDto();
+        userRequestDto.setIntroduction("자기소개");
+        userRequestDto.setPassword(testPassword);
 
+        //when-then
+        mockMvc.perform(put("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userRequestDto))
+                .principal(mockPrincipal)
+                )
+                .andExpect(status().isOk())
+                .andDo(print());
+    }
 }

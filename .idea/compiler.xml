@@ -10,5 +10,10 @@
         <module name="io.kimnaparknam.kkulkkeok.main" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="TestCode" target="17" />
+      <module name="TestCode.main" target="17" />
+      <module name="TestCode.test" target="17" />
+    </bytecodeTargetLevel>
   </component>
 </project>
