@@ -2,6 +2,7 @@ package io.kimnaparknam.kkulkkeok.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.kimnaparknam.kkulkkeok.config.WebSecurityConfig;
+import io.kimnaparknam.kkulkkeok.security.UserDetailsImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,20 +11,21 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
-import org.springframework.stereotype.Component;
+import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MockMvcBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.security.Principal;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.http.ResponseEntity.status;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(
         controllers = {UserController.class},
@@ -34,29 +36,54 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
                 )
         }
 )
-
 class UserControllerTest {
-        private MockMvc mockMvc;
-        private Principal principal;
-        @Autowired
-        private WebApplicationContext context;
-        @Autowired
-        private ObjectMapper objectMapper;
-        @MockBean
-        UserService userService;
-        @BeforeEach
-        public void setup() {
-                mockMvc = MockMvcBuilders.webAppContextSetup(context)
-                        .apply(springSecurity(new MockSpringSecurityFIlter()))
-                        .build();
-        }
+    private MockMvc mockMvc;
+    private Principal mockPrincipal;
+    @MockBean
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private WebApplicationContext context;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @MockBean
+    UserService userService;
 
-        @Test
-        @DisplayName("로그인")
-        void test1() throws Exception {
-                //when - then
-                mockMvc.perform(get("/api/v1/users/login"))
-                        .andExpect(status().isOk())
-                        .andDo(print());
-        }
+    @BeforeEach
+    public void setup() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(context)
+                .apply(springSecurity(new MockSpringSecurityFIlter()))
+                .build();
+    }
+
+    private void mockUserSetup() {
+        String username = "Jin";
+        String password = passwordEncoder.encode("jin123");
+        String gender = "male";
+        String introduction = "spartajin";
+        String email = "jin@email.com";
+        String nickname = "jin";
+        User testUser = new User(username, password, gender, introduction, email, nickname);
+        UserDetailsImpl testUserDetails = new UserDetailsImpl(testUser);
+        mockPrincipal = new UsernamePasswordAuthenticationToken(testUserDetails, "", testUserDetails.getAuthorities());
+    }
+
+    @Test
+    @DisplayName("회원 가입 요청 처리")
+    void test1() throws Exception {
+        //given
+        SignupRequestDto signupRequestDto = new SignupRequestDto();
+        signupRequestDto.setUsername("Bum");
+        signupRequestDto.setPassword("1234");
+        signupRequestDto.setGender("male");
+        signupRequestDto.setEmail("Bum@email.com");
+        signupRequestDto.setNickname("bum");
+
+        //when-then
+        mockMvc.perform(post("/users/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(signupRequestDto)))
+                .andExpect(status().isCreated())
+                .andDo(print());
+    }
+
 }

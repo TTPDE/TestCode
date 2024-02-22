@@ -43,6 +43,15 @@ public class User {
         this.password = encodedPassword;
     }
 
+    public User(String username, String password, String gender, String introduction, String email, String nickname) {
+        this.username = username;
+        this.password = password;
+        this.gender = gender;
+        this.introduction = introduction;
+        this.email = email;
+        this.nickname = nickname;
+    }
+
 
     public void update(String encodedPassword, UserRequestDto requestDto) {
         this.password= encodedPassword;
